@@ -25,13 +25,15 @@ Firmware lives on a removable program card carrying 2 MB or 16 MB of SPI flash
 
 | Out | Circuit | Resolution | Notes |
 |---|---|---|---|
-| Audio out 1, 2 | MCP4822 SPI DAC | 12-bit, signed −2048…2047 | Synchronous, accurate, uncalibrated. Carries **aux CV**. |
-| CV out 1, 2 | Filtered PWM from RP2040 | 11-bit @ 60 kHz, inverted | Calibrated from EEPROM. Carries **pitch**, to match other cards. |
+| Audio out 1, 2 | MCP4822 SPI DAC | 12-bit, signed −2048…2047 | Synchronous, uncalibrated. Carries **aux CV**. |
+| CV out 1, 2 | Filtered PWM from RP2040 | 11-bit @ 60 kHz, inverted, dithered to ~15 bits | Calibrated from EEPROM. The panel's designated precision pair — carries **pitch**. |
 | Pulse out 1, 2 | Transistor-buffered digital | — | ~5–6 V, inverted at GPIO |
 
-Both DAC and PWM outs are DC-coupled and bipolar over roughly ±6 V, so either can
-carry pitch. The DAC is the more precise circuit, but only the PWM outs have
-calibration data, and patch compatibility with the other cards decides it.
+Both DAC and PWM outs are DC-coupled and bipolar over roughly ±6 V, so either
+could carry pitch, but the CV pair wins on every count: it is what Music Thing
+calls the panel's "precision control voltages for pitch", it is the pair the
+EEPROM calibration describes, it is where the Turing Machine and Simple MIDI
+cards put 1V/oct, and sigma-delta dithering takes it past the DAC's resolution.
 
 ### Controls available
 
@@ -57,10 +59,11 @@ of them share a set, taking the same gate but different CV roles.
 | **A** | Pulse out 1 | CV out 1 | Audio out 1 |
 | **B** | Pulse out 2 | CV out 2 | Audio out 2 |
 
-Pitch is on the **CV** jacks to match the Turing Machine and Simple MIDI cards,
-so cards can be swapped without repatching. That trades a little resolution
-(11-bit PWM vs the 12-bit DAC) for the EEPROM calibration, which describes the
-PWM outputs only — the right trade when nothing is quantised.
+Pitch is on the **CV** jacks to match the Turing Machine and Simple MIDI cards
+(verified from both cards' sources), so cards can be swapped without repatching.
+This is not a compromise: that pair is the panel's designated precision output,
+it is the only one the EEPROM calibrates, and dithering gives it ~15 effective
+bits — finer than the 12-bit DAC it replaced.
 
 The CV out carries accent or timbre depending on the voice patched. Where two
 voices share a set, they take the same gate; one reads the CV as accent, the

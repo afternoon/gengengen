@@ -58,10 +58,17 @@ bind_interrupts!(struct Irqs {
 });
 
 #[cfg(target_arch = "arm")]
-/// How often to scan the knobs.
+/// How often the main loop runs: panel scan, clock poll, and one CV dither tick.
 ///
-/// Fast enough to feel responsive under the hand, slow enough that the mux
-/// settle delays and ADC reads are a trivial share of CPU.
+/// Fast enough to feel responsive under the hand, and slow enough that the mux
+/// settle delays and ADC reads stay a trivial share of CPU.
+///
+/// It also sets the pitch resolution, which is the binding constraint. The CV
+/// outputs reach beyond their 11 PWM bits by dithering, so resolution scales
+/// with updates per step: at 5 ms that is ~17-25 updates per 16th note across
+/// 120-174 bpm, worth about 15.5 effective bits, or ~0.3 cents. Going to 1 ms
+/// would buy ~0.06 cents, which is far past anything audible - so this stays
+/// where the responsiveness argument puts it.
 const PANEL_SCAN_MS: u64 = 5;
 
 #[cfg(target_arch = "arm")]
@@ -163,6 +170,13 @@ async fn run(mut board: Board) -> ! {
         }
 
         update_leds(&mut board, &engine, gate_off_at[0].is_some(), gate_off_at[1].is_some());
+
+        // Keep the CV sigma-delta running between steps. The extra resolution
+        // on the pitch outputs comes from the output filter averaging
+        // successive duties, so this has to tick steadily whether or not the
+        // sequencer advanced - without it the pitch sits on an 11-bit grid,
+        // about 7 cents, which is audible under unquantised pitch.
+        board.tick_cv();
 
         Timer::after(Duration::from_millis(PANEL_SCAN_MS)).await;
     }

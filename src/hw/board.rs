@@ -18,7 +18,7 @@ use embassy_time::{Duration, Timer};
 
 use crate::hw::calibration::{self, ChannelCalibration, CAL_BLOCK_LEN};
 use crate::hw::controls::{stretch_knob, Raw, SwitchPosition};
-use crate::hw::cv::millivolts_to_pwm_duty;
+use crate::hw::cv::{millivolts_to_cv_19bit, SigmaDelta};
 use crate::hw::dac::{command_word, millivolts_to_code, DacChannel};
 use crate::hw::mux::{MuxAddress, SETTLE_MICROS};
 
@@ -79,6 +79,13 @@ pub struct Board {
     led_levels: [u16; 6],
     /// Same, for the two CV outputs sharing a slice.
     cv_levels: [u16; 2],
+    /// Sigma-delta state per CV channel. These outputs are the Workshop
+    /// System's precision pitch pair, and dithering is what makes them precise:
+    /// without it an 11-bit duty puts a ~7 cent grid under the pitch.
+    cv_dither: [SigmaDelta; 2],
+    /// The 19-bit target each CV channel is heading for, so `tick_cv` can keep
+    /// dithering between sequencer steps.
+    cv_target: [u32; 2],
     dac: Spi<'static, SPI0, spi::Blocking>,
     dac_cs: Output<'static>,
     adc: Adc<'static, adc::Async>,
@@ -171,6 +178,8 @@ impl Board {
             cv,
             led_levels: [0; 6],
             cv_levels: [0; 2],
+            cv_dither: [SigmaDelta::new(); 2],
+            cv_target: [0; 2],
             dac,
             dac_cs,
             adc,
@@ -241,12 +250,26 @@ impl Board {
     /// calibration value straight through. An earlier version subtracted from
     /// `CV_PWM_TOP` here as well, which left the output running backwards.
     pub fn set_cv_millivolts(&mut self, channel: usize, mv: i32) {
-        let cal = &self.cal[channel.min(1)];
-        // `set_cv_raw` applies the hardware inversion, and
-        // `millivolts_to_pwm_duty` has already undone the calibration's own, so
-        // the value passes through with exactly one net flip.
-        let duty = millivolts_to_pwm_duty(mv, &cal.line);
-        self.set_cv_raw(channel, CV_PWM_TOP - duty);
+        let ch = channel.min(1);
+        self.cv_target[ch] = millivolts_to_cv_19bit(mv, &self.cal[ch].line);
+        // Emit one update now so a new step takes effect immediately rather
+        // than waiting for the next tick.
+        self.tick_cv();
+    }
+
+    /// Push one dithered update to both CV outputs.
+    ///
+    /// Call this at a steady rate. The extra resolution comes from the output
+    /// filter averaging successive duties, so the more often this runs the finer
+    /// the effective step - and an irregular rate smears the dither unevenly.
+    pub fn tick_cv(&mut self) {
+        for ch in 0..2 {
+            let duty = self.cv_dither[ch].next_duty(self.cv_target[ch]);
+            // `set_cv_raw` applies the hardware inversion; the target is already
+            // the right way up, so hand it the duty directly.
+            self.cv_levels[ch] = duty.min(CV_PWM_TOP);
+        }
+        self.write_cv_config();
     }
 
     /// Write a CV output as a duty cycle, correcting for the inverted PWM.
@@ -257,7 +280,11 @@ impl Board {
     pub fn set_cv_raw(&mut self, channel: usize, value: u16) {
         let ch = channel.min(1);
         self.cv_levels[ch] = value.min(CV_PWM_TOP);
+        self.write_cv_config();
+    }
 
+    /// Write both CV channels' current levels to the shared PWM slice.
+    fn write_cv_config(&mut self) {
         let mut cfg = pwm::Config::default();
         cfg.top = CV_PWM_TOP;
         // Inverted: a higher duty gives a lower voltage.

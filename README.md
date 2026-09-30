@@ -37,11 +37,12 @@ Pitch comes out of the jacks labelled **CV**, matching the Turing Machine and
 Simple MIDI cards, so you can swap cards without repatching the rack. The aux CV
 is accent or timbre depending on how you patch it.
 
-That choice costs a little pitch resolution — the CV outs are 11-bit filtered PWM
-where the "audio" outs are a 12-bit SPI DAC — but it gains the EEPROM
-calibration, which describes the PWM outputs and nothing else. For unquantised
-pitch that's the better trade: nothing is trying to land on a semitone, so an
-accurate *range* matters more than fine steps.
+That pair is the right home for pitch on its own merits too: Music Thing
+describes it as the panel's "precision control voltages for pitch", it is the
+only pair the EEPROM calibration covers, and although the PWM is nominally
+11-bit, dithering the duty cycle lets the output filter average successive
+values into the gaps. At the main loop's update rate that is worth roughly 15
+effective bits — about 0.3 cents, against 7 cents for an undithered 11-bit duty.
 
 Three voices work fine on two sets: give two of them the same gate, and let one
 read the aux CV as accent while the other reads it as timbre.
