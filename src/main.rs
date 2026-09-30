@@ -212,10 +212,17 @@ fn apply_outputs(
             board.set_pulse_out(ch, true);
             gate_off_at[ch] = Some(now + gate_len);
         }
-        // Pitch to the DAC (linear, non-inverted); aux to the PWM CV out
-        // through its calibration, which is what that calibration describes.
-        board.set_dac_millivolts(ch, voice.pitch_mv);
-        board.set_cv_millivolts(ch, voice.aux_mv);
+        // Pitch goes to the PWM CV outs and aux to the DAC "audio" outs, to
+        // match the Turing Machine and Simple MIDI cards - so swapping cards
+        // mid-set does not mean repatching the rack.
+        //
+        // This costs some pitch resolution (11-bit PWM rather than the 12-bit
+        // DAC) but gains the EEPROM calibration, which describes these outputs
+        // and nothing else. For unquantised pitch that is the better trade: we
+        // are not trying to land on semitones, so an accurate *range* matters
+        // more than fine steps.
+        board.set_cv_millivolts(ch, voice.pitch_mv);
+        board.set_dac_millivolts(ch, voice.aux_mv);
     }
 }
 

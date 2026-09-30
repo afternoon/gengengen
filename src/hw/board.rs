@@ -18,6 +18,7 @@ use embassy_time::{Duration, Timer};
 
 use crate::hw::calibration::{self, ChannelCalibration, CAL_BLOCK_LEN};
 use crate::hw::controls::{stretch_knob, Raw, SwitchPosition};
+use crate::hw::cv::millivolts_to_pwm_duty;
 use crate::hw::dac::{command_word, millivolts_to_code, DacChannel};
 use crate::hw::mux::{MuxAddress, SETTLE_MICROS};
 
@@ -231,18 +232,21 @@ impl Board {
     /// Write a voltage to a CV output, through the EEPROM calibration.
     ///
     /// This is what the calibration block actually describes: the inverted,
-    /// filtered-PWM CV outputs. The fitted line already accounts for the
-    /// inversion, so no extra flip is needed here - `set_cv_raw` inverts the
-    /// duty cycle, and the calibration maps millivolts to the 19-bit CV scale,
-    /// which we shift down to the PWM's 11 bits.
+    /// filtered-PWM CV outputs.
+    ///
+    /// Inversion is easy to get wrong here, so to be explicit about the chain:
+    /// the calibration line is already inverted (higher volts, lower value), and
+    /// `set_cv_raw` inverts once more when it writes the duty. Those two cancel,
+    /// so this function must *not* invert a third time - it passes the scaled
+    /// calibration value straight through. An earlier version subtracted from
+    /// `CV_PWM_TOP` here as well, which left the output running backwards.
     pub fn set_cv_millivolts(&mut self, channel: usize, mv: i32) {
         let cal = &self.cal[channel.min(1)];
-        let wide = cal.line.dac_for_millivolts(mv);
-        // 19-bit calibration scale down to the 11-bit PWM. The calibration line
-        // is inverted, and set_cv_raw inverts again, so pass the value straight
-        // through rather than double-correcting.
-        let raw = (wide >> 8) as u16;
-        self.set_cv_raw(channel, CV_PWM_TOP.saturating_sub(raw.min(CV_PWM_TOP)));
+        // `set_cv_raw` applies the hardware inversion, and
+        // `millivolts_to_pwm_duty` has already undone the calibration's own, so
+        // the value passes through with exactly one net flip.
+        let duty = millivolts_to_pwm_duty(mv, &cal.line);
+        self.set_cv_raw(channel, CV_PWM_TOP - duty);
     }
 
     /// Write a CV output as a duty cycle, correcting for the inverted PWM.

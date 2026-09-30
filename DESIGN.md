@@ -25,12 +25,13 @@ Firmware lives on a removable program card carrying 2 MB or 16 MB of SPI flash
 
 | Out | Circuit | Resolution | Notes |
 |---|---|---|---|
-| Audio out 1, 2 | MCP4822 SPI DAC | 12-bit, signed −2048…2047 | Synchronous, accurate. **Use for pitch.** |
-| CV out 1, 2 | Filtered PWM from RP2040 | 11-bit @ 60 kHz, inverted | Slower settling, asynchronous |
+| Audio out 1, 2 | MCP4822 SPI DAC | 12-bit, signed −2048…2047 | Synchronous, accurate, uncalibrated. Carries **aux CV**. |
+| CV out 1, 2 | Filtered PWM from RP2040 | 11-bit @ 60 kHz, inverted | Calibrated from EEPROM. Carries **pitch**, to match other cards. |
 | Pulse out 1, 2 | Transistor-buffered digital | — | ~5–6 V, inverted at GPIO |
 
-Both DAC and PWM outs are DC-coupled and bipolar over roughly ±6 V, so either
-can carry CV — but the DAC outs are the precise ones, and pitch needs precision.
+Both DAC and PWM outs are DC-coupled and bipolar over roughly ±6 V, so either can
+carry pitch. The DAC is the more precise circuit, but only the PWM outs have
+calibration data, and patch compatibility with the other cards decides it.
 
 ### Controls available
 
@@ -51,18 +52,22 @@ Pulse In 1 takes the external clock, leaving:
 Two output sets, so two independent voices. Ben has three physical voices; two
 of them share a set, taking the same gate but different CV roles.
 
-| Set | Pulse | Pitch (DAC) | CV (PWM) |
+| Set | Pulse | Pitch (PWM CV) | Aux (DAC) |
 |---|---|---|---|
-| **A** | Pulse out 1 | Audio out 1 | CV out 1 |
-| **B** | Pulse out 2 | Audio out 2 | CV out 2 |
+| **A** | Pulse out 1 | CV out 1 | Audio out 1 |
+| **B** | Pulse out 2 | CV out 2 | Audio out 2 |
+
+Pitch is on the **CV** jacks to match the Turing Machine and Simple MIDI cards,
+so cards can be swapped without repatching. That trades a little resolution
+(11-bit PWM vs the 12-bit DAC) for the EEPROM calibration, which describes the
+PWM outputs only — the right trade when nothing is quantised.
 
 The CV out carries accent or timbre depending on the voice patched. Where two
 voices share a set, they take the same gate; one reads the CV as accent, the
 other as timbre.
 
-> **Unverified:** which panel jacks are labelled "pitch" vs "CV" may not line up
-> with which circuit is the DAC vs the PWM. Confirm on hardware before trusting
-> the table above.
+> **Unverified:** which panel jacks correspond to the DAC vs the PWM circuit.
+> Confirm on hardware before trusting the table above.
 
 ## The four modes
 

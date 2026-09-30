@@ -82,3 +82,87 @@ mod tests {
         assert_ne!(a, b, "10 mV difference was lost");
     }
 }
+
+/// PWM top for the CV outputs. Mirrors `board::CV_PWM_TOP`, kept here so the
+/// scaling can be tested on the host where `board` does not compile.
+pub const CV_PWM_TOP: u16 = 2047;
+
+/// The PWM duty for a voltage, through the calibration.
+///
+/// Inversion is the thing to be careful about. The calibration line is already
+/// inverted (higher volts, lower value) and the PWM hardware inverts again, so
+/// exactly one more flip is needed overall — not two, and not none. An earlier
+/// version flipped twice and ran the outputs backwards, which is the bug the
+/// tests below exist to catch.
+pub fn millivolts_to_pwm_duty(mv: i32, cal: &CalLine) -> u16 {
+    let wide = cal.dac_for_millivolts(mv);
+    let scaled = ((wide >> 8) as u16).min(CV_PWM_TOP);
+    CV_PWM_TOP - scaled
+}
+
+#[cfg(test)]
+mod pwm_scaling_tests {
+    use super::*;
+    use crate::hw::calibration::{least_squares, DEFAULT_POINTS};
+
+    fn cal() -> CalLine {
+        least_squares(&DEFAULT_POINTS)
+    }
+
+    #[test]
+    fn duty_rises_with_voltage() {
+        // The bug this guards: two cancelling inversions left the CV outputs
+        // running backwards. Once pitch moved onto these outputs that would
+        // have played every sequence upside down.
+        let c = cal();
+        let mut prev = 0u16;
+        for mv in (-2000..=2000).step_by(100) {
+            let duty = millivolts_to_pwm_duty(mv, &c);
+            assert!(
+                duty >= prev,
+                "{mv} mV gave duty {duty}, below the previous {prev}"
+            );
+            prev = duty;
+        }
+    }
+
+    #[test]
+    fn zero_volts_is_near_the_middle() {
+        let duty = millivolts_to_pwm_duty(0, &cal());
+        let mid = CV_PWM_TOP / 2;
+        let off = (duty as i32 - mid as i32).abs();
+        assert!(off < 120, "0 V gave duty {duty}, expected near {mid}");
+    }
+
+    #[test]
+    fn octave_spans_are_proportional() {
+        // Two octaves must be twice one octave, or the switch's range settings
+        // are not the intervals they claim.
+        let c = cal();
+        let one = millivolts_to_pwm_duty(500, &c) as i32
+            - millivolts_to_pwm_duty(-500, &c) as i32;
+        let two = millivolts_to_pwm_duty(1000, &c) as i32
+            - millivolts_to_pwm_duty(-1000, &c) as i32;
+        let ratio = two as f64 / one as f64;
+        assert!((1.9..2.1).contains(&ratio), "ratio was {ratio:.2}, expected 2");
+    }
+
+    #[test]
+    fn stays_within_the_pwm_range() {
+        let c = cal();
+        for mv in [-100_000, -6000, 0, 6000, 100_000] {
+            assert!(millivolts_to_pwm_duty(mv, &c) <= CV_PWM_TOP);
+        }
+    }
+
+    #[test]
+    fn fine_differences_survive() {
+        // 11 bits over ~12 V is about 6 mV per step, so a 50 mV difference must
+        // still move the output - unquantised pitch depends on it.
+        let c = cal();
+        assert_ne!(
+            millivolts_to_pwm_duty(0, &c),
+            millivolts_to_pwm_duty(50, &c)
+        );
+    }
+}

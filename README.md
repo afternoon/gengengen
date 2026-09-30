@@ -33,10 +33,15 @@ now" override.
 
 Two output sets, so two voices — see the panel above for which jack is which.
 
-Pitch goes to the jacks labelled *audio* deliberately: those are the MCP4822 SPI
-DAC, which is the precise circuit. The CV outs are filtered PWM — fine for accent
-or timbre, less good for pitch. The aux CV is accent or timbre depending on how
-you patch it.
+Pitch comes out of the jacks labelled **CV**, matching the Turing Machine and
+Simple MIDI cards, so you can swap cards without repatching the rack. The aux CV
+is accent or timbre depending on how you patch it.
+
+That choice costs a little pitch resolution — the CV outs are 11-bit filtered PWM
+where the "audio" outs are a 12-bit SPI DAC — but it gains the EEPROM
+calibration, which describes the PWM outputs and nothing else. For unquantised
+pitch that's the better trade: nothing is trying to land on a semitone, so an
+accurate *range* matters more than fine steps.
 
 Three voices work fine on two sets: give two of them the same gate, and let one
 read the aux CV as accent while the other reads it as timbre.

@@ -126,13 +126,13 @@
 
   <rect class="lbl-out" x="296" y="818" width="134" height="66" rx="5"/>
   <text class="t" x="363" y="841" font-size="19">Voice A</text>
-  <text class="t" x="363" y="863" font-size="19">Pitch</text>
-  <text class="t" x="363" y="880" font-size="13">(unquantised)</text>
+  <text class="t" x="363" y="863" font-size="19">Aux CV</text>
+  <text class="t" x="363" y="880" font-size="13">accent / timbre</text>
 
   <rect class="lbl-out" x="436" y="818" width="134" height="66" rx="5"/>
   <text class="t" x="503" y="841" font-size="19">Voice B</text>
-  <text class="t" x="503" y="863" font-size="19">Pitch</text>
-  <text class="t" x="503" y="880" font-size="13">(unquantised)</text>
+  <text class="t" x="503" y="863" font-size="19">Aux CV</text>
+  <text class="t" x="503" y="880" font-size="13">accent / timbre</text>
 
   <!-- direction arrows -->
   <g>
@@ -169,13 +169,13 @@
 
   <rect class="lbl-out" x="296" y="1013" width="134" height="66" rx="5"/>
   <text class="t" x="363" y="1036" font-size="19">Voice A</text>
-  <text class="t" x="363" y="1058" font-size="19">Aux CV</text>
-  <text class="t" x="363" y="1075" font-size="13">accent / timbre</text>
+  <text class="t" x="363" y="1058" font-size="19">Pitch</text>
+  <text class="t" x="363" y="1075" font-size="13">(unquantised)</text>
 
   <rect class="lbl-out" x="436" y="1013" width="134" height="66" rx="5"/>
   <text class="t" x="503" y="1036" font-size="19">Voice B</text>
-  <text class="t" x="503" y="1058" font-size="19">Aux CV</text>
-  <text class="t" x="503" y="1075" font-size="13">accent / timbre</text>
+  <text class="t" x="503" y="1058" font-size="19">Pitch</text>
+  <text class="t" x="503" y="1075" font-size="13">(unquantised)</text>
 
   <text class="t-gold" x="287" y="1150" font-size="25">CV</text>
   <g>
