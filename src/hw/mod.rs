@@ -11,9 +11,13 @@
 //! that can be wrong in a *musical* way are checkable without a module
 //! plugged in.
 
+// Driver glue, ARM only: the Cortex-M crates cannot build for the host.
+#[cfg(target_arch = "arm")]
+pub mod board;
+
 pub mod calibration;
 pub mod controls;
+pub mod cv;
 pub mod dac;
 pub mod mux;
 pub mod pins;
-pub mod pitch;

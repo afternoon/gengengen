@@ -155,14 +155,14 @@ testable on the host and the BSP is extractable as a crate later if it earns it.
    enabled — it biases the input transistor.
 2. **The mux needs a settle delay.** Switch the 4052 address, wait, *then* read
    the ADC. Dorsey's card does this explicitly.
-3. **Calibration is on the module, not the card.** An I2C EEPROM (GPIO16/17)
-   holds per-unit output calibration — magic number 2001, per-channel point
-   tables, big-endian, CRC-checked, least-squares fit to get slope/offset.
-   Uncalibrated outs are documented as *not accurate enough for 1V/oct*. That
-   still matters with unquantised pitch: not for landing on notes, but because
-   without it the range is wrong — ask for two octaves of span and you get some
-   other span. The existing Rust card leaves it as a TODO, so we implement it
-   ourselves.
+3. **Calibration is on the module, not the card, and it describes the PWM CV
+   outs — not the DAC.** An I2C EEPROM (GPIO16/17) holds per-unit calibration:
+   magic number 2001, per-channel point tables, big-endian, CRC-checked,
+   least-squares fit to get slope/offset. The fitted slope is *inverted*,
+   matching the PWM circuit. Applying it to the MCP4822 pitch outputs inverts
+   every sequence and wastes most of the DAC's range — pitch uses a plain linear
+   map instead, and the calibration drives the aux CV outs. The existing Rust
+   card leaves calibration as a TODO, so we implement it ourselves.
 4. **Don't hard-code ±6.000 V.** Every source hedges on the exact range. Use the
    calibration data.
 5. **Knobs don't reach the rails** — raw ADC is typically 14…4095, and an

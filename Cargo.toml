@@ -21,7 +21,12 @@ embassy-executor = { version = "0.7", features = [
     "arch-cortex-m",
     "executor-thread",
     "executor-interrupt",
-    "task-arena-size-98304",
+    # 16K, not the 98K Crafted Volts uses - that card does WAV playback and needs
+    # the room; we hold two small futures. The arena is statically allocated, so
+    # an undersized one panics at task-spawn rather than failing to build: this is
+    # sized with a wide margin over the two tasks' measured state and should be
+    # re-checked with `llvm-size` if a task gains large locals.
+    "task-arena-size-16384",
 ] }
 embassy-time = { version = "0.4", features = ["defmt", "defmt-timestamp-uptime"] }
 embassy-sync = { version = "0.6", features = ["defmt"] }

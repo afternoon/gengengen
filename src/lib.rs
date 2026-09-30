@@ -12,3 +12,4 @@
 
 pub mod hw;
 pub mod music;
+pub mod seq;
