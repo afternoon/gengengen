@@ -1,0 +1,7 @@
+# Linker args live in build.rs (rustc-link-arg-bins), not here, to avoid
+# passing them twice.
+[target.thumbv6m-none-eabi]
+runner = "probe-rs run --chip RP2040"
+
+[build]
+target = "thumbv6m-none-eabi"
