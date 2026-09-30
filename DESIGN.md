@@ -66,8 +66,14 @@ other as timbre.
 
 ## The four modes
 
-Y selects between them. All four draw from the same scale table and pitch
-generator, so switching mid-set stays harmonically continuous.
+Y selects between them. All four generate **raw unquantised voltage** — no
+scales, no note numbers, no equal temperament. A random voltage goes to the VCO
+and it plays whatever that is. This is the Turing Machine model, and it is the
+reason an unquantised random voltage sounds like *a modular* while a scale-locked
+arpeggio sounds like a plugin.
+
+Calibration still matters even unquantised: without it the *range* is wrong, so
+asking for two octaves of span gets you some other span.
 
 ### 1. Euclid + Turing (danceable)
 
@@ -81,41 +87,42 @@ pitch in the manner of a Turing Machine.
 
 ### 2. Arp-run (danceable)
 
-Inspired by the Wirehead Basilisk's arp-run mode. Holds a chord shape and walks
-it in *runs* — bursts of adjacent degrees — rather than picking isolated random
-notes. Runs are what make a line sound played rather than sampled from a
-distribution.
+Inspired by the Wirehead Basilisk's arp-run mode, but adapted to unquantised
+pitch: a run is a sequence of steps each a **fixed voltage increment** from the
+last, rather than adjacent degrees of a chord. The increment is randomised per
+run, so some runs crawl microtonally and others leap. Runs are what make a line
+sound played rather than sampled from a distribution.
 
-- **Main** → mean run length: 1 = pure random arp (≈ Turing), ~4 = rolling
+- **Main** → mean run length: 1 = pure random voltage (≈ Turing), ~4 = rolling
   303-style lines, max = long rising/falling sweeps
-- Pick a start degree and direction, play 2–5 consecutive degrees, jump, repeat
-
-> **Open question:** whether runs should step through *diatonic scale* degrees
-> or *chord* degrees. This changes the generator. The Basilisk manual's
-> sequencing bullets are vector outlines that don't extract as text, so this is
-> currently inferred from product descriptions rather than read from the manual.
+- Pick a start voltage, an increment and a direction; walk it; jump; repeat
+- Runs that walk off the top of the range **fold** back rather than clamping, so
+  a run reverses instead of wasting its remaining steps on a repeated note
 
 ### 3. Call/response (danceable)
 
 Uses both output sets as two voices in dialogue. Voice A plays the first half of
-the pattern, voice B answers on the second, with B's pitch derived from A's
-(inverted, transposed, or retrograde).
+the pattern, voice B answers on the second, with B's voltage derived from A's by
+**inversion about the centre of the range** — so a rising call becomes a falling
+answer, and the response is recognisably related to the call rather than merely
+adjacent to it.
 
 - **Main** → crossfade from strict alternation to full overlap
 
 ### 4. Drone/Suspension (not danceable)
 
 The breakdown and the transition tool. Gates mostly stop; what remains is long,
-sparse, irregular gates — one every 2, 3, 7 bars — with slow CV glides between
-held pitches instead of stepped jumps.
+sparse, irregular gates — placed irregularly rather than on a grid, since even
+placement would just read as a slow pulse — with slow CV glides between held
+voltages instead of stepped jumps.
 
 - **Main** → sparse events … fully held (gates high and staying high, CV
   drifting continuously)
 
 Purpose in performance: switch an *incoming* voice to this mode so it arrives as
 texture rather than as a competing rhythm, bring it up, then switch it to a
-danceable mode. Mechanically it's the same scale table and pitch generator as
-the others with the clock divided hard and slew applied to the CV.
+danceable mode. Mechanically it's the same voltage generator as the others with
+long gates and slew applied to the pitch CV.
 
 ## Behaviour
 
@@ -134,7 +141,7 @@ task architecture is the right fit, and suits sequencer state machines well.
     src/
       main.rs        task wiring
       hw/            board support: pin map, mux, DAC, EEPROM calibration, LEDs
-      music/         scales, pitch generation, the four mode generators
+      music/         voltage generation, Euclidean rhythm, the four modes
       seq/           clock, step state, pattern boundaries, mode switching
 
 The `hw` module is our own BSP — no Workshop Computer BSP crate exists, so this
@@ -151,9 +158,11 @@ testable on the host and the BSP is extractable as a crate later if it earns it.
 3. **Calibration is on the module, not the card.** An I2C EEPROM (GPIO16/17)
    holds per-unit output calibration — magic number 2001, per-channel point
    tables, big-endian, CRC-checked, least-squares fit to get slope/offset.
-   Uncalibrated outs are documented as *not accurate enough for 1V/oct*, so for
-   a pitch sequencer this is mandatory, not optional. The existing Rust card
-   leaves it as a TODO, so we implement it ourselves.
+   Uncalibrated outs are documented as *not accurate enough for 1V/oct*. That
+   still matters with unquantised pitch: not for landing on notes, but because
+   without it the range is wrong — ask for two octaves of span and you get some
+   other span. The existing Rust card leaves it as a TODO, so we implement it
+   ourselves.
 4. **Don't hard-code ±6.000 V.** Every source hedges on the exact range. Use the
    calibration data.
 5. **Knobs don't reach the rails** — raw ADC is typically 14…4095, and an
