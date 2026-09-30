@@ -1,0 +1,279 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="575" height="1755" viewBox="0 0 575 1755" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <title>gengengen — Workshop Computer panel guide</title>
+  <desc>Control and jack assignments for the gengengen generative sequencer program card.</desc>
+
+  <defs>
+    <style>
+      .panel      { fill: #4a4a4c; }
+      .lbl        { fill: #ffffff; stroke: #1a1a1a; stroke-width: 2; }
+      .lbl-out    { fill: #f0c944; stroke: #1a1a1a; stroke-width: 2; }
+      .lbl-unused { fill: #6e6e70; stroke: #3a3a3c; stroke-width: 2; }
+      .t          { fill: #111111; font-weight: 700; text-anchor: middle; }
+      .t-unused   { fill: #c9c9cc; font-weight: 500; text-anchor: middle; font-style: italic; }
+      .t-white    { fill: #ffffff; font-weight: 700; text-anchor: middle; }
+      .t-gold     { fill: #f0c944; font-weight: 700; text-anchor: middle; }
+      .t-axis     { fill: #ffffff; font-weight: 500; text-anchor: middle; }
+      .knob-face  { fill: #262628; }
+      .knob-ring  { fill: none; stroke: #ffffff; stroke-width: 3; }
+      .tick       { stroke: #ffffff; stroke-width: 3; stroke-linecap: round; }
+      .jack-out   { fill: #b9b9bd; stroke: #2a2a2c; stroke-width: 2; }
+      .arrow-c    { fill: none; stroke: #ffffff; stroke-width: 2.5; }
+      .arrow-g    { stroke: #ffffff; stroke-width: 2.5; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <rect class="panel" width="575" height="1755" rx="8"/>
+
+  <!-- ===== header ===== -->
+  <circle cx="118" cy="68" r="26" fill="#3a3a3c"/>
+  <path d="M108 58 L128 78 M128 58 L108 78" stroke="#6a6a6c" stroke-width="7" stroke-linecap="round"/>
+  <text class="t-white" x="368" y="72" font-size="30">Music Thing Modular</text>
+
+  <!-- ===== big knob ===== -->
+  <circle class="knob-ring" cx="287" cy="290" r="196"/>
+  <g class="tick">
+    <line x1="287" y1="94" x2="287" y2="118"/>
+    <line x1="148" y1="151" x2="165" y2="168"/>
+    <line x1="91"  y1="290" x2="115" y2="290"/>
+    <line x1="148" y1="429" x2="165" y2="412"/>
+    <line x1="287" y1="486" x2="287" y2="462"/>
+    <line x1="426" y1="429" x2="409" y2="412"/>
+    <line x1="483" y1="290" x2="459" y2="290"/>
+    <line x1="426" y1="151" x2="409" y2="168"/>
+  </g>
+  <circle class="knob-face" cx="287" cy="290" r="170"/>
+  <path d="M287 140
+           C 330 140 352 168 372 190
+           C 396 216 434 238 434 290
+           C 434 342 396 364 372 390
+           C 352 412 330 440 287 440
+           C 244 440 222 412 202 390
+           C 178 364 140 342 140 290
+           C 140 238 178 216 202 190
+           C 222 168 244 140 287 140 Z"
+        fill="none" stroke="#7d7d81" stroke-width="11"/>
+  <rect class="lbl" x="196" y="252" width="182" height="76" rx="5"/>
+  <text class="t" x="287" y="281" font-size="23">Mode</text>
+  <text class="t" x="287" y="310" font-size="23">Parameter</text>
+
+  <!-- ===== X / Y knobs and switch ===== -->
+  <!-- X knob -->
+  <circle class="knob-ring" cx="102" cy="608" r="52"/>
+  <g class="tick">
+    <line x1="102" y1="556" x2="102" y2="568"/>
+    <line x1="65"  y1="571" x2="74"  y2="580"/>
+    <line x1="50"  y1="608" x2="62"  y2="608"/>
+    <line x1="65"  y1="645" x2="74"  y2="636"/>
+    <line x1="139" y1="571" x2="130" y2="580"/>
+    <line x1="154" y1="608" x2="142" y2="608"/>
+    <line x1="139" y1="645" x2="130" y2="636"/>
+  </g>
+  <circle class="knob-face" cx="102" cy="608" r="44"/>
+  <line x1="102" y1="608" x2="76" y2="572" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+  <rect class="lbl" x="20" y="596" width="164" height="60" rx="5"/>
+  <text class="t" x="102" y="620" font-size="21">Sequence</text>
+  <text class="t" x="102" y="645" font-size="21">Length</text>
+  <text class="t-axis" x="102" y="686" font-size="20">X</text>
+
+  <!-- Y knob -->
+  <circle class="knob-ring" cx="287" cy="608" r="52"/>
+  <g class="tick">
+    <line x1="287" y1="556" x2="287" y2="568"/>
+    <line x1="250" y1="571" x2="259" y2="580"/>
+    <line x1="235" y1="608" x2="247" y2="608"/>
+    <line x1="250" y1="645" x2="259" y2="636"/>
+    <line x1="324" y1="571" x2="315" y2="580"/>
+    <line x1="339" y1="608" x2="327" y2="608"/>
+    <line x1="324" y1="645" x2="315" y2="636"/>
+  </g>
+  <circle class="knob-face" cx="287" cy="608" r="44"/>
+  <line x1="287" y1="608" x2="303" y2="567" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+  <rect class="lbl" x="205" y="606" width="164" height="40" rx="5"/>
+  <text class="t" x="287" y="634" font-size="21">Mode</text>
+  <text class="t-axis" x="287" y="686" font-size="20">Y</text>
+
+  <!-- Z switch: three positions -->
+  <rect class="lbl" x="388" y="530" width="168" height="52" rx="5"/>
+  <text class="t" x="472" y="551" font-size="18">2 Octaves</text>
+  <text class="t" x="472" y="572" font-size="15">(up, latching)</text>
+
+  <rect class="lbl" x="388" y="586" width="168" height="52" rx="5"/>
+  <text class="t" x="472" y="607" font-size="18">1 Octave</text>
+  <text class="t" x="472" y="628" font-size="15">(middle)</text>
+
+  <rect class="lbl-out" x="388" y="642" width="168" height="66" rx="5"/>
+  <text class="t" x="472" y="664" font-size="18">Regenerate</text>
+  <text class="t" x="472" y="684" font-size="15">+ apply now</text>
+  <text class="t" x="472" y="701" font-size="14">(down, momentary)</text>
+  <text class="t-axis" x="472" y="734" font-size="20">Z</text>
+
+  <!-- ===== row 1: CV / Audio ===== -->
+  <text class="t-gold" x="287" y="800" font-size="25">CV / Audio</text>
+
+  <!-- jack washers -->
+  <g>
+    <circle class="jack-out" cx="83"  cy="852" r="34"/><circle cx="83"  cy="852" r="19" fill="#2a2a2c"/>
+    <circle class="jack-out" cx="223" cy="852" r="34"/><circle cx="223" cy="852" r="19" fill="#2a2a2c"/>
+    <circle class="jack-out" cx="363" cy="852" r="34"/><circle cx="363" cy="852" r="19" fill="#2a2a2c"/>
+    <circle class="jack-out" cx="503" cy="852" r="34"/><circle cx="503" cy="852" r="19" fill="#2a2a2c"/>
+  </g>
+
+  <rect class="lbl-unused" x="16" y="828" width="134" height="46" rx="5"/>
+  <text class="t-unused" x="83" y="857" font-size="19">unused</text>
+
+  <rect class="lbl-unused" x="156" y="828" width="134" height="46" rx="5"/>
+  <text class="t-unused" x="223" y="857" font-size="19">unused</text>
+
+  <rect class="lbl-out" x="296" y="818" width="134" height="66" rx="5"/>
+  <text class="t" x="363" y="841" font-size="19">Voice A</text>
+  <text class="t" x="363" y="863" font-size="19">Pitch</text>
+  <text class="t" x="363" y="880" font-size="13">(unquantised)</text>
+
+  <rect class="lbl-out" x="436" y="818" width="134" height="66" rx="5"/>
+  <text class="t" x="503" y="841" font-size="19">Voice B</text>
+  <text class="t" x="503" y="863" font-size="19">Pitch</text>
+  <text class="t" x="503" y="880" font-size="13">(unquantised)</text>
+
+  <!-- direction arrows -->
+  <g>
+    <circle class="arrow-c" cx="83"  cy="947" r="20"/>
+    <line class="arrow-g" x1="83" y1="957" x2="83" y2="937"/>
+    <path d="M76 944 L83 936 L90 944" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle class="arrow-c" cx="223" cy="947" r="20"/>
+    <line class="arrow-g" x1="223" y1="957" x2="223" y2="937"/>
+    <path d="M216 944 L223 936 L230 944" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle class="arrow-c" cx="363" cy="947" r="20"/>
+    <line class="arrow-g" x1="363" y1="937" x2="363" y2="957"/>
+    <path d="M356 950 L363 958 L370 950" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle class="arrow-c" cx="503" cy="947" r="20"/>
+    <line class="arrow-g" x1="503" y1="937" x2="503" y2="957"/>
+    <path d="M496 950 L503 958 L510 950" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ===== row 2: CV ===== -->
+  <g>
+    <circle class="jack-out" cx="83"  cy="1046" r="34"/><circle cx="83"  cy="1046" r="19" fill="#2a2a2c"/>
+    <circle class="jack-out" cx="223" cy="1046" r="34"/><circle cx="223" cy="1046" r="19" fill="#2a2a2c"/>
+    <circle class="jack-out" cx="363" cy="1046" r="34"/><circle cx="363" cy="1046" r="19" fill="#2a2a2c"/>
+    <circle class="jack-out" cx="503" cy="1046" r="34"/><circle cx="503" cy="1046" r="19" fill="#2a2a2c"/>
+  </g>
+
+  <rect class="lbl-unused" x="16" y="1023" width="134" height="46" rx="5"/>
+  <text class="t-unused" x="83" y="1052" font-size="19">unused</text>
+
+  <rect class="lbl-unused" x="156" y="1023" width="134" height="46" rx="5"/>
+  <text class="t-unused" x="223" y="1052" font-size="19">unused</text>
+
+  <rect class="lbl-out" x="296" y="1013" width="134" height="66" rx="5"/>
+  <text class="t" x="363" y="1036" font-size="19">Voice A</text>
+  <text class="t" x="363" y="1058" font-size="19">Aux CV</text>
+  <text class="t" x="363" y="1075" font-size="13">accent / timbre</text>
+
+  <rect class="lbl-out" x="436" y="1013" width="134" height="66" rx="5"/>
+  <text class="t" x="503" y="1036" font-size="19">Voice B</text>
+  <text class="t" x="503" y="1058" font-size="19">Aux CV</text>
+  <text class="t" x="503" y="1075" font-size="13">accent / timbre</text>
+
+  <text class="t-gold" x="287" y="1150" font-size="25">CV</text>
+  <g>
+    <circle class="arrow-c" cx="83"  cy="1141" r="20"/>
+    <line class="arrow-g" x1="83" y1="1151" x2="83" y2="1131"/>
+    <path d="M76 1138 L83 1130 L90 1138" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle class="arrow-c" cx="223" cy="1141" r="20"/>
+    <line class="arrow-g" x1="223" y1="1151" x2="223" y2="1131"/>
+    <path d="M216 1138 L223 1130 L230 1138" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle class="arrow-c" cx="363" cy="1141" r="20"/>
+    <line class="arrow-g" x1="363" y1="1131" x2="363" y2="1151"/>
+    <path d="M356 1144 L363 1152 L370 1144" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle class="arrow-c" cx="503" cy="1141" r="20"/>
+    <line class="arrow-g" x1="503" y1="1131" x2="503" y2="1151"/>
+    <path d="M496 1144 L503 1152 L510 1144" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ===== row 3: Pulses ===== -->
+  <g>
+    <circle class="jack-out" cx="83"  cy="1240" r="34"/><circle cx="83"  cy="1240" r="19" fill="#2a2a2c"/>
+    <circle class="jack-out" cx="223" cy="1240" r="34"/><circle cx="223" cy="1240" r="19" fill="#2a2a2c"/>
+    <circle class="jack-out" cx="363" cy="1240" r="34"/><circle cx="363" cy="1240" r="19" fill="#2a2a2c"/>
+    <circle class="jack-out" cx="503" cy="1240" r="34"/><circle cx="503" cy="1240" r="19" fill="#2a2a2c"/>
+  </g>
+
+  <rect class="lbl" x="16" y="1213" width="134" height="56" rx="5"/>
+  <text class="t" x="83" y="1236" font-size="19">Clock In</text>
+  <text class="t" x="83" y="1259" font-size="16">1 pulse = 1 step</text>
+
+  <rect class="lbl-unused" x="156" y="1217" width="134" height="46" rx="5"/>
+  <text class="t-unused" x="223" y="1246" font-size="19">unused</text>
+
+  <rect class="lbl-out" x="296" y="1213" width="134" height="56" rx="5"/>
+  <text class="t" x="363" y="1236" font-size="19">Voice A</text>
+  <text class="t" x="363" y="1259" font-size="19">Gate</text>
+
+  <rect class="lbl-out" x="436" y="1213" width="134" height="56" rx="5"/>
+  <text class="t" x="503" y="1236" font-size="19">Voice B</text>
+  <text class="t" x="503" y="1259" font-size="19">Gate</text>
+
+  <text class="t-gold" x="287" y="1390" font-size="25">Pulses</text>
+  <g>
+    <circle class="arrow-c" cx="83"  cy="1335" r="20"/>
+    <line class="arrow-g" x1="83" y1="1345" x2="83" y2="1325"/>
+    <path d="M76 1332 L83 1324 L90 1332" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle class="arrow-c" cx="223" cy="1335" r="20"/>
+    <line class="arrow-g" x1="223" y1="1345" x2="223" y2="1325"/>
+    <path d="M216 1332 L223 1324 L230 1332" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle class="arrow-c" cx="363" cy="1335" r="20"/>
+    <line class="arrow-g" x1="363" y1="1325" x2="363" y2="1345"/>
+    <path d="M356 1338 L363 1346 L370 1338" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle class="arrow-c" cx="503" cy="1335" r="20"/>
+    <line class="arrow-g" x1="503" y1="1325" x2="503" y2="1345"/>
+    <path d="M496 1338 L503 1346 L510 1338" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ===== LED block and card slot ===== -->
+  <rect x="40" y="1385" width="36" height="86" rx="17" fill="#2a2a2c"/>
+
+  <!-- six LEDs, 2 wide x 3 tall, annotated -->
+  <!-- Shown mid-performance: mode 1 selected (LED 1 lit), voice A gating. -->
+  <circle cx="46"  cy="1516" r="20" fill="#e03a2f"/>
+  <circle cx="112" cy="1516" r="20" fill="#3a2422"/>
+  <circle cx="46"  cy="1573" r="20" fill="#3a2422"/>
+  <circle cx="112" cy="1573" r="20" fill="#3a2422"/>
+  <circle cx="46"  cy="1630" r="20" fill="#e03a2f"/>
+  <circle cx="112" cy="1630" r="20" fill="#5a2a26"/>
+
+  <rect class="lbl" x="152" y="1489" width="236" height="54" rx="5"/>
+  <text class="t" x="270" y="1511" font-size="18">LEDs 1–4: Mode</text>
+  <text class="t" x="270" y="1533" font-size="15">brighter on the downbeat</text>
+
+  <rect class="lbl-out" x="152" y="1603" width="236" height="54" rx="5"/>
+  <text class="t" x="270" y="1625" font-size="18">LEDs 5–6: Gates</text>
+  <text class="t" x="270" y="1647" font-size="15">dim = change queued</text>
+
+  <rect x="243" y="1631" width="186" height="30" rx="4" fill="#2a2a2c" opacity="0.0"/>
+  <circle cx="523" cy="1646" r="22" fill="#2a2a2c"/>
+
+  <!-- ===== footer ===== -->
+  <g fill="#ffffff">
+    <rect x="258" y="1676" width="10" height="20"/>
+    <rect x="274" y="1676" width="10" height="20"/>
+    <rect x="290" y="1676" width="10" height="20"/>
+    <rect x="306" y="1676" width="10" height="20"/>
+    <rect x="322" y="1676" width="10" height="20"/>
+    <rect x="338" y="1676" width="10" height="20"/>
+    <rect x="354" y="1676" width="10" height="20"/>
+    <rect x="370" y="1676" width="10" height="20"/>
+  </g>
+  <text class="t-white" x="368" y="1730" font-size="40" letter-spacing="-1">Workshop Computer</text>
+
+  <circle cx="118" cy="1700" r="26" fill="#3a3a3c"/>
+  <path d="M118 1688 L118 1712 M106 1700 L130 1700" stroke="#6a6a6c" stroke-width="7" stroke-linecap="round"/>
+</svg>

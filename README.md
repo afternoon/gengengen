@@ -8,6 +8,10 @@ with a modular system.
 Pitch is **unquantised** — raw voltage, no scales, no note numbers. A random
 voltage goes to the VCO and it plays whatever that is.
 
+## Panel
+
+<img src="docs/panel.svg" width="340" alt="Workshop Computer panel with gengengen control assignments">
+
 ## Controls
 
 Externally clocked on **Pulse In 1**. One clock pulse is one step.
@@ -27,21 +31,22 @@ now" override.
 
 ### Outputs
 
-Two output sets, so two voices:
+Two output sets, so two voices — see the panel above for which jack is which.
 
-| Set | Gate | Pitch | Aux CV |
-|---|---|---|---|
-| **A** | Pulse out 1 | Audio out 1 | CV out 1 |
-| **B** | Pulse out 2 | Audio out 2 | CV out 2 |
+Pitch goes to the jacks labelled *audio* deliberately: those are the MCP4822 SPI
+DAC, which is the precise circuit. The CV outs are filtered PWM — fine for accent
+or timbre, less good for pitch. The aux CV is accent or timbre depending on how
+you patch it.
 
-Pitch goes to the *audio* outs deliberately: those are the MCP4822 SPI DAC, which
-is the precise circuit. The CV outs are filtered PWM — fine for accent or timbre,
-less good for pitch. The aux CV is accent or timbre depending on how you patch it.
+Three voices work fine on two sets: give two of them the same gate, and let one
+read the aux CV as accent while the other reads it as timbre.
 
 ### LEDs
 
-Top four show the current mode, brightening on the downbeat. Bottom two show the
-two voices' gates, dimly lit when a knob change is queued but hasn't landed yet.
+The top four show the current mode, pulsing brighter on the downbeat so there's a
+visible tempo reference without spending an LED on it. The bottom two show the
+voices' gates, lit dimly when a knob change is queued but hasn't landed yet — so
+you can tell the knob registered before the sound changes.
 
 ## The four modes
 
@@ -141,6 +146,10 @@ src/
   seq/
     engine.rs          clock, step state, boundary-quantised changes
     slew.rs            voltage glides
+docs/
+  panel.svg            the panel guide above; edit this, not a raster
+tools/
+  elf2uf2.py           ELF to UF2, because elf2uf2-rs rejects our ABI
 ```
 
 `hw/` is effectively a board support package for the Workshop Computer. No BSP
