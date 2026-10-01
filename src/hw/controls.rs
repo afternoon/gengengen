@@ -45,9 +45,9 @@ pub fn stretch_knob(raw: Raw) -> Raw {
 /// as a GPIO, hence the thresholds.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum SwitchPosition {
-    /// Latching. Two-octave pitch range.
+    /// Latching. Contrast: voice 2 plays a randomly chosen other mode.
     Up,
-    /// Resting. One-octave pitch range.
+    /// Resting. Both voices play the selected mode.
     Middle,
     /// Momentary — springs back. Regenerates the sequences.
     Down,

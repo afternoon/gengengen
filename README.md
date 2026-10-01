@@ -22,12 +22,16 @@ Externally clocked on **Pulse In 1**. One clock pulse is one step.
 | **X** knob | Sequence length, 1–16 steps |
 | **Main** knob | Per-mode parameter (see below) |
 | **Z** switch down | Regenerate — new voltages, now (momentary) |
-| **Z** switch middle | 1 octave pitch range |
-| **Z** switch up | 2 octave pitch range (latching) |
+| **Z** switch middle | Both voices play the selected mode |
+| **Z** switch up | Contrast — voice 2 plays a different, randomly chosen mode (latching) |
 
 Mode and length changes take effect at the **next pattern boundary**, so turning
-a knob mid-bar doesn't drop a gate in the wrong place. Switch-down is the "do it
-now" override.
+a knob mid-bar doesn't drop a gate in the wrong place. Flipping the switch up
+waits for the boundary too. Switch-down is the "do it now" override.
+
+In contrast, voice 1 keeps the mode on Y and voice 2 gets one of the other
+three, re-picked on every regeneration. Its mode LED shows dimly beside voice
+1's. Pitch range is fixed at one octave.
 
 ### Outputs
 

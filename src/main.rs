@@ -2,8 +2,8 @@
 //! Computer.
 //!
 //! Externally clocked on Pulse In 1. Y selects the mode, X the sequence length,
-//! Main is the per-mode parameter, and the Z switch regenerates (down) and
-//! selects the pitch range (middle/up).
+//! Main is the per-mode parameter, and the Z switch regenerates (down) or puts
+//! voice 2 on a contrasting, randomly chosen mode (up).
 //!
 //! Architecture: a single Embassy task polling at 5 ms, rather than a fixed
 //! sample-rate ISR. The sequencer runs at step rate — tens of Hz — so there is
@@ -46,8 +46,6 @@ use gengengen::hw::board::{Board, Panel};
 use gengengen::hw::controls::{Quantised, SwitchPosition};
 #[cfg(target_arch = "arm")]
 use gengengen::music::modes::Mode;
-#[cfg(target_arch = "arm")]
-use gengengen::music::voltage::PitchRange;
 #[cfg(target_arch = "arm")]
 use gengengen::seq::engine::{Controls, Engine};
 
@@ -115,7 +113,7 @@ async fn run(mut board: Board) -> ! {
         mode: Mode::EuclidTuring,
         length: 16,
         main: 2048,
-        range: PitchRange::OneOctave,
+        contrast: false,
     };
     let mut engine = Engine::new(initial, seed);
 
@@ -197,13 +195,10 @@ fn controls_from_panel(
         // 0-indexed knob position to a 1..=16 step count.
         length: length_pos + 1,
         main: panel.main_stretched(),
-        range: match panel.switch() {
-            // Up latches into the wider range. Down is momentary and means
-            // "regenerate", so it should not also change the range - keep
-            // whatever the resting position implies.
-            SwitchPosition::Up => PitchRange::TwoOctaves,
-            _ => PitchRange::OneOctave,
-        },
+        // Up latches into contrast. Down is momentary and means "regenerate",
+        // so it should not also change the voicing - keep whatever the resting
+        // position implies.
+        contrast: panel.switch() == SwitchPosition::Up,
     }
 }
 
@@ -243,15 +238,15 @@ fn apply_outputs(
 #[cfg(target_arch = "arm")]
 /// Show what the sequencer is doing on the six LEDs.
 ///
-/// Top four: the current mode, as a single lit LED. Bottom two: the two voices'
+/// Top four: the current mode, as a single lit LED, plus voice 2's mode dimly
+/// when contrast has given it a different one. Bottom two: the two voices'
 /// gates. This is chosen for what is useful at arm's length in a dark room —
 /// which mode am I in, and are both voices actually playing.
 fn update_leds(board: &mut Board, engine: &Engine, gate_a: bool, gate_b: bool) {
     let active = engine.active();
-    let mode_index = Mode::ALL
-        .iter()
-        .position(|m| *m == active.mode)
-        .unwrap_or(0);
+    let index_of = |mode: Mode| Mode::ALL.iter().position(|m| *m == mode).unwrap_or(0);
+    let mode_index = index_of(active.mode);
+    let mode_b_index = index_of(engine.mode_b());
 
     for i in 0..4 {
         // Pulse the mode LED on the downbeat so there is a visible tempo
@@ -263,6 +258,10 @@ fn update_leds(board: &mut Board, engine: &Engine, gate_a: bool, gate_b: bool) {
             } else {
                 1200
             }
+        } else if i == mode_b_index {
+            // Dimmer than voice 1's resting level, and no downbeat pulse, so
+            // the two are distinguishable in the dark.
+            300
         } else {
             0
         };

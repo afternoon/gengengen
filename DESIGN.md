@@ -45,8 +45,9 @@ Pulse In 1 takes the external clock, leaving:
 - **Z** switch — 3-position `(ON)-OFF-ON`: **momentary down**, rest middle,
   **latching up**. Read as an analogue value through the mux, not as a GPIO.
   - Down (momentary) → regenerate pitch/CV sequences
-  - Middle → 1 octave pitch range
-  - Up (latching) → 2 octave pitch range
+  - Middle → both voices play the selected mode
+  - Up (latching) → contrast: voice 1 plays the selected mode, voice 2 a
+    different mode picked at random (re-picked on each regeneration)
 - 6 LEDs (2 wide × 3 tall), plain PWM-dimmed, not addressable
 
 ## Output map

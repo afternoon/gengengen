@@ -94,11 +94,11 @@
 
   <!-- Z switch: three positions -->
   <rect class="lbl" x="388" y="530" width="168" height="52" rx="5"/>
-  <text class="t" x="472" y="551" font-size="18">2 Octaves</text>
+  <text class="t" x="472" y="551" font-size="18">Contrast</text>
   <text class="t" x="472" y="572" font-size="15">(up, latching)</text>
 
   <rect class="lbl" x="388" y="586" width="168" height="52" rx="5"/>
-  <text class="t" x="472" y="607" font-size="18">1 Octave</text>
+  <text class="t" x="472" y="607" font-size="18">Same mode</text>
   <text class="t" x="472" y="628" font-size="15">(middle)</text>
 
   <rect class="lbl-out" x="388" y="642" width="168" height="66" rx="5"/>

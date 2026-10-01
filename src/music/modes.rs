@@ -2,7 +2,7 @@
 //!
 //! Three danceable, one not. Each one interprets the Main knob differently;
 //! X is always sequence length and the Z switch is always
-//! regenerate/pitch-range, so those live outside the modes themselves.
+//! regenerate/contrast, so those live outside the modes themselves.
 //!
 //! All four produce voltages rather than notes. Nothing is quantised.
 

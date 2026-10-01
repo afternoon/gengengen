@@ -7,6 +7,10 @@
 //! or length knob mid-bar must not drop a gate in the wrong place, so pending
 //! changes are held and applied at the next pattern boundary. The switch is the
 //! override for when you want it now.
+//!
+//! Voice A always plays the selected mode. In contrast (switch up), voice B
+//! plays a different mode, picked at random, so the two voices pull apart
+//! rather than sharing material.
 
 use crate::music::modes::{generate, GenParams, Mode, Pattern, PatternPair, StepEvent};
 use crate::music::rng::Rng;
@@ -21,8 +25,14 @@ pub struct Controls {
     pub length: usize,
     /// 0..=4095 from the Main knob.
     pub main: u16,
-    pub range: PitchRange,
+    /// Switch up: voice B plays a randomly chosen other mode.
+    pub contrast: bool,
 }
+
+/// The pitch range every mode generates into.
+///
+/// Fixed: the switch's up position selects contrast, not range.
+const PITCH_RANGE: PitchRange = PitchRange::OneOctave;
 
 /// One voice's live output state.
 #[derive(Copy, Clone, Debug)]
@@ -91,6 +101,9 @@ pub struct Engine {
     active: Controls,
     /// Controls that will take effect at the next pattern boundary.
     pending: Option<Controls>,
+    /// The mode voice B is playing. Equal to `active.mode` unless contrast
+    /// is on.
+    mode_b: Mode,
     /// Absolute step count since the last regeneration.
     step: usize,
     a: VoiceState,
@@ -100,23 +113,21 @@ pub struct Engine {
 
 impl Engine {
     pub fn new(controls: Controls, seed: u32) -> Self {
-        let mut rng = Rng::new(seed);
-        let params = GenParams {
-            mode: controls.mode,
-            length: controls.length,
-            main: controls.main,
-            range: controls.range,
-        };
-        let patterns = generate(&params, &mut rng);
-        Self {
-            patterns,
+        let mut e = Self {
+            patterns: PatternPair {
+                a: Pattern::empty(controls.length),
+                b: Pattern::empty(controls.length),
+            },
             active: controls,
             pending: None,
+            mode_b: controls.mode,
             step: 0,
             a: VoiceState::new(),
             b: VoiceState::new(),
-            rng,
-        }
+            rng: Rng::new(seed),
+        };
+        e.regenerate();
+        e
     }
 
     /// Note new control positions.
@@ -148,14 +159,37 @@ impl Engine {
     }
 
     /// Generate new patterns from the active controls.
+    ///
+    /// In contrast, voice B's mode is re-picked on every regeneration, so each
+    /// new pattern brings a fresh pairing rather than locking one in for the
+    /// whole time the switch is up.
     pub fn regenerate(&mut self) {
         let params = GenParams {
             mode: self.active.mode,
             length: self.active.length,
             main: self.active.main,
-            range: self.active.range,
+            range: PITCH_RANGE,
         };
-        self.patterns = generate(&params, &mut self.rng);
+        let pair = generate(&params, &mut self.rng);
+
+        if self.active.contrast {
+            self.mode_b = contrasting_mode(self.active.mode, &mut self.rng);
+            let params_b = GenParams {
+                mode: self.mode_b,
+                ..params
+            };
+            // Take B from the other mode's pair. For Call/response that is the
+            // answer, which carries the half-pattern offset that makes it sit
+            // against whatever voice A is doing.
+            let pair_b = generate(&params_b, &mut self.rng);
+            self.patterns = PatternPair {
+                a: pair.a,
+                b: pair_b.b,
+            };
+        } else {
+            self.mode_b = self.active.mode;
+            self.patterns = pair;
+        }
     }
 
     /// Advance one clock pulse. Call this on each rising edge of Pulse In 1.
@@ -167,12 +201,13 @@ impl Engine {
             if let Some(p) = self.pending.take() {
                 let length_changed = p.length != self.active.length;
                 let mode_changed = p.mode != self.active.mode;
+                let contrast_changed = p.contrast != self.active.contrast;
                 self.active = p;
                 // A new mode or length needs new material; a Main-knob-only
                 // change reshapes the existing pattern on the next regenerate,
                 // so we do not throw away a sequence the player likes just
                 // because they nudged a knob.
-                if mode_changed || length_changed {
+                if mode_changed || length_changed || contrast_changed {
                     self.regenerate();
                     self.step = 0;
                 }
@@ -222,6 +257,12 @@ impl Engine {
         self.active
     }
 
+    /// The mode voice B is playing, which differs from the active mode when
+    /// contrast is on.
+    pub fn mode_b(&self) -> Mode {
+        self.mode_b
+    }
+
     pub fn has_pending(&self) -> bool {
         self.pending.is_some()
     }
@@ -240,6 +281,20 @@ impl Engine {
     }
 }
 
+/// Pick a mode other than `mode`, uniformly at random.
+///
+/// Never the same mode: contrast that sometimes lands on no contrast at all
+/// would make the switch feel broken.
+fn contrasting_mode(mode: Mode, rng: &mut Rng) -> Mode {
+    let others = Mode::ALL.len() as u32 - 1;
+    let pick = rng.below(others) as usize;
+    Mode::ALL
+        .into_iter()
+        .filter(|m| *m != mode)
+        .nth(pick)
+        .unwrap_or(mode)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -249,7 +304,7 @@ mod tests {
             mode,
             length,
             main: 2048,
-            range: PitchRange::OneOctave,
+            contrast: false,
         }
     }
 
@@ -408,9 +463,83 @@ mod tests {
                     if i % 53 == 0 {
                         e.force_now();
                     }
+                    if i % 41 == 0 {
+                        let mut c = e.active();
+                        c.contrast = !c.contrast;
+                        e.set_controls(c);
+                    }
                 }
             }
         }
+    }
+
+    #[test]
+    fn without_contrast_both_voices_play_the_selected_mode() {
+        let e = Engine::new(controls(Mode::ArpRun, 16), 14);
+        assert_eq!(e.mode_b(), Mode::ArpRun);
+    }
+
+    #[test]
+    fn contrast_gives_voice_b_a_different_mode() {
+        for mode in Mode::ALL {
+            for seed in 0..20 {
+                let mut c = controls(mode, 16);
+                c.contrast = true;
+                let e = Engine::new(c, seed);
+                assert_ne!(e.mode_b(), mode, "seed {seed}: no contrast");
+                assert_eq!(e.active().mode, mode, "voice A should keep the mode");
+            }
+        }
+    }
+
+    #[test]
+    fn contrast_reaches_every_other_mode() {
+        // A random pick that never lands on one of the modes would quietly
+        // shrink the palette.
+        let mut c = controls(Mode::EuclidTuring, 16);
+        c.contrast = true;
+        let mut e = Engine::new(c, 15);
+        let mut seen = [false; 4];
+        for _ in 0..100 {
+            e.regenerate();
+            seen[Mode::ALL.iter().position(|m| *m == e.mode_b()).unwrap()] = true;
+        }
+        assert_eq!(seen, [false, true, true, true]);
+    }
+
+    #[test]
+    fn contrast_voice_b_has_its_modes_character() {
+        // With Euclid on A and Drone on B, B should glide where A steps.
+        let mut c = controls(Mode::EuclidTuring, 16);
+        c.contrast = true;
+        let mut e = Engine::new(c, 16);
+        while e.mode_b() != Mode::Drone {
+            e.regenerate();
+        }
+        assert_eq!(e.pattern_a().slew_ticks[0], 0, "voice A should step");
+        assert!(e.pattern_b().slew_ticks[0] > 0, "voice B should glide");
+    }
+
+    #[test]
+    fn engaging_contrast_waits_for_the_boundary_then_regenerates() {
+        // Same timing as a mode change: flipping the switch up mid-bar must
+        // not swap voice B's material until the bar ends.
+        let mut e = Engine::new(controls(Mode::ArpRun, 8), 17);
+        e.clock();
+        let mut c = controls(Mode::ArpRun, 8);
+        c.contrast = true;
+        e.set_controls(c);
+        for _ in 0..7 {
+            e.clock();
+            assert_eq!(e.mode_b(), Mode::ArpRun, "contrast landed mid-pattern");
+        }
+        e.clock();
+        assert_ne!(e.mode_b(), Mode::ArpRun, "contrast did not land at boundary");
+
+        // And dropping back to the middle restores matching voices.
+        e.set_controls(controls(Mode::ArpRun, 8));
+        e.force_now();
+        assert_eq!(e.mode_b(), Mode::ArpRun);
     }
 
     #[test]
